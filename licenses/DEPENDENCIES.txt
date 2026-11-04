@@ -1,0 +1,9 @@
+Tmds.Ssh 0.26.0 — MIT, Tmds.Ssh-LICENSE.txt.
+BouncyCastle.Cryptography 2.7.0 — BouncyCastle-LICENSE.md.
+Microsoft .NET / Windows Desktop 8.0.27 — DotNet-LICENSE.txt,
+WindowsDesktop-LICENSE.txt and DotNet-THIRD-PARTY-NOTICES.txt.
+Microsoft.Bcl.Cryptography, Microsoft.Extensions.DependencyInjection.Abstractions,
+Microsoft.Extensions.Logging.Abstractions, System.Diagnostics.DiagnosticSource,
+System.Formats.Asn1 10.0.12 — MIT (.NET Foundation), DotNet-LICENSE.txt.
+See also Cryptography-THIRD-PARTY-NOTICES.txt.
+Material Icons Outlined — ../Material-Icons-LICENSE.txt.

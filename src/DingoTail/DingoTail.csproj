@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <ApplicationIcon>../../assets/brand/dingotail.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="../../assets/brand/dingotail.ico" LogicalName="DingoTail.App.ico" />
+    <EmbeddedResource Include="../../assets/brand/mascot.png" LogicalName="DingoTail.Mascot.png" />
+    <EmbeddedResource Include="../../licenses/BRANDING.md" LogicalName="DingoTail.Branding.txt" />
+    <EmbeddedResource Include="../../COPYRIGHT" LogicalName="DingoTail.Copyright.txt" />
+    <EmbeddedResource Include="../../LICENSE" LogicalName="DingoTail.License.txt" />
+    <EmbeddedResource Include="MaterialIconOutlines.json" LogicalName="DingoTail.IconOutlines.json" />
+    <EmbeddedResource Include="../../assets/icons/MaterialIconsOutlined-Regular.otf" LogicalName="DingoTail.Icons.otf" />
+    <EmbeddedResource Include="../../licenses/Material-Icons-LICENSE.txt" LogicalName="DingoTail.Icons.LICENSE.txt" />
+    <None Include="../../licenses/Material-Icons-LICENSE.txt" Link="Material-Icons-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <EmbeddedResource Include="../../assets/brand/wordmark.png" LogicalName="DingoTail.Wordmark.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Tmds.Ssh" Version="0.26.0" />
+    <InternalsVisibleTo Include="DingoTail.UiTests" />
+  </ItemGroup>
+  <!-- This dependency's public API analyzer targets a newer compiler than the .NET 8 SDK. -->
+  <Target Name="RemoveDependencyApiAnalyzer" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer)" Condition="'%(Analyzer.Filename)' == 'Microsoft.CodeAnalysis.PublicApiAnalyzers'" />
+    </ItemGroup>
+  </Target>
+</Project>
+
+
+
+
+

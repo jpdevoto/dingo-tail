@@ -1,0 +1,40 @@
+# .NET build output and local package caches
+**/bin/
+**/obj/
+artifacts/
+packages/
+TestResults/
+*.coverage
+*.coveragexml
+*.pdb
+
+# IDE and editor state
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Local configuration, credentials, and workspace state
+.env
+.env.*
+!.env.example
+workspace.json
+workspace-*.tmp
+.screenshot-session/
+*.pfx
+*.p12
+*.key
+*.pem
+id_rsa
+id_ed25519
+
+# Logs, dumps, and local data
+*.log
+*.dmp
+*.db
+*.sqlite*
+*.tmp
+*.bak
+Thumbs.db
+Desktop.ini

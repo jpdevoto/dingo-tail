@@ -1,0 +1,20 @@
+DingoTail
+Copyright (C) 2026 Juan Pablo Devoto
+
+DingoTail source code and project documentation, except the separately identified
+branding and third-party materials, are licensed under GNU GPL version 3 only
+(SPDX: GPL-3.0-only). See LICENSE for the unmodified license text.
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License version 3 as published by the Free
+Software Foundation.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+The DingoTail name and DINGO branding are subject to BRANDING.md. No trademark
+rights are granted by the code license. Third-party components retain their own
+copyrights and licenses; see licenses/ and the corresponding source archive.
+This notice asserts only rights held by the named rights holder and does not
+claim ownership of third-party material or otherwise unprotectable material.
