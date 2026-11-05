@@ -1,5 +1,14 @@
 # DingoTail for Windows
 
+<div align="center">
+  <img src="assets/brand/mascot.png" alt="DingoTail Mascot" width="160" />
+  <br />
+  <img src="assets/brand/wordmark.png" alt="DingoTail" width="360" />
+  <br />
+  <br />
+</div>
+
+
 DingoTail is a native Windows desktop log viewer for following local text logs, remote files over SSH, and systemd journals. Put related sources side by side, filter each source independently, and highlight the lines you care about.
 
 ## Run the Windows release
