@@ -11,6 +11,14 @@
 
 DingoTail is a native Windows desktop log viewer for following local text logs, remote files over SSH, and systemd journals. Put related sources side by side, filter each source independently, and highlight the lines you care about.
 
+## Why C# and WinForms?
+
+DingoTail began as a Rust application using egui. This C# and WinForms edition brings its log-viewing workflows to a native Windows interface, with the goal of staying responsive on Windows virtual machines and Remote Desktop sessions where GPU acceleration may be limited or unavailable.
+
+WinForms provides Windows desktop controls, and this edition uses a custom-painted log view to display retained lines. The implementation focuses on local files, SSH sources, systemd journals, multiple panes, filtering, and highlighting within a Windows-focused .NET codebase.
+
+The Rust edition is available in the separate fork, [dingo-tail-rust](https://github.com/jpdevoto/dingo-tail-rust).
+
 ## Run the Windows release
 
 1. Open [the Windows x64 build folder](builds/windows-x64/) and download the ZIP for the latest release.
