@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to build
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -11,10 +17,13 @@ permissions:
 jobs:
   release:
     runs-on: windows-2025
+    env:
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+          ref: refs/tags/${{ env.RELEASE_TAG }}
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
@@ -25,8 +34,8 @@ jobs:
           $project = 'src/DingoTail/DingoTail.csproj'
           [xml]$manifest = Get-Content -LiteralPath $project -Raw
           $version = $manifest.Project.PropertyGroup.Version
-          if ($env:GITHUB_REF_NAME -cne "v$version") {
-            throw "Tag $env:GITHUB_REF_NAME does not match project version $version."
+          if ($env:RELEASE_TAG -cne "v$version") {
+            throw "Tag $env:RELEASE_TAG does not match project version $version."
           }
 
           $publish = Join-Path $env:RUNNER_TEMP 'DingoTail'
@@ -57,7 +66,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $tag = $env:GITHUB_REF_NAME
+          $tag = $env:RELEASE_TAG
           $changelog = Get-Content -LiteralPath 'CHANGELOG.md' -Raw
           $version = [regex]::Escape($tag.Substring(1))
           $section = [regex]::Match($changelog, "(?ms)^## $version\r?\n(.*?)(?=^## |\z)")
