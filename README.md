@@ -21,7 +21,7 @@ The Rust edition is available in the separate fork, [dingo-tail-rust](https://gi
 
 ## Run the Windows release
 
-1. Open [the Windows x64 build folder](builds/windows-x64/) and download the ZIP for the latest release.
+1. Download the Windows x64 ZIP from the [latest GitHub release](https://github.com/jpdevoto/dingo-tail/releases/latest).
 2. Extract the entire ZIP to a folder and run `DingoTail.exe` from that folder. Keep the DLLs and resource folders alongside the executable.
 
 ## Follow local and remote sources
@@ -47,6 +47,14 @@ Open **Appearance & highlighting** with the gear button to adjust the log font s
 ![Appearance settings with font size and severity highlighting rules](docs/screenshots/appearance-and-highlighting.jpg)
 
 *The appearance dialog shows the font size and the default ERROR, WARN, INFO, and DEBUG highlighting rules.*
+
+In version **1.0.1.0**, use **Initial lines to load** below **Log font size** to set
+the startup history for local files, SSH files, and journals. The default is 200
+and the range is 1–20,000. Choose **Apply and save**, then restart any running
+reader to use the new value. Automatic retries use the count captured at start.
+Journal reconnects resume from the last cursor when available. Existing byte
+limits can result in fewer retained lines.
+
 
 ## Build from source
 
@@ -74,7 +82,7 @@ The default workspace file is `%APPDATA%\DingoTail.WinForms\workspace.json`. It 
 | `src/DingoTail/` | WinForms project, application source, and icon outlines |
 | `assets/` | Application icon, mascot, wordmark, and Material Icons font |
 | `docs/screenshots/` | Captures of the existing release running on the Windows QA desktop |
-| `builds/windows-x64/` | Self-contained release ZIP and SHA-256 checksum |
+| `.github/workflows/release.yml` | Builds and publishes the Windows x64 ZIP and SHA-256 checksum when a version tag is pushed |
 | `licenses/` | Embedded branding and Material Icons notices, plus third-party dependency notices |
 
 ## License and notices

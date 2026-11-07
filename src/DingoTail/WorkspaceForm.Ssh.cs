@@ -579,7 +579,7 @@ internal sealed partial class WorkspaceForm
             var source = new LogSource(Guid.NewGuid().ToString("N"), requested, server.Profile.Id, journal.Checked, sudo.Checked);
             try
             {
-                RemoteCommand.Build(source, null);
+                RemoteCommand.Build(source, null, state.InitialLines);
             }
             catch (ArgumentException error)
             {
@@ -595,7 +595,7 @@ internal sealed partial class WorkspaceForm
             if (existing is not null)
             {
                 Assign(state.ActivePane, existing.Id);
-                sessions[existing.Id].Reader.Start();
+                sessions[existing.Id].Reader.Start(state.InitialLines);
                 return;
             }
 
@@ -603,7 +603,7 @@ internal sealed partial class WorkspaceForm
             state.Sources.Add(source);
             sessions.Add(source.Id, session);
             Assign(state.ActivePane, source.Id);
-            session.Reader.Start();
+            session.Reader.Start(state.InitialLines);
             return;
         }
     }

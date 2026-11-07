@@ -2,11 +2,15 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace DingoTail;
 
 internal sealed class WorkspaceState
 {
+    [JsonPropertyName("initial_lines")]
+    [JsonConverter(typeof(InitialLineCountJsonConverter))]
+    public int InitialLines { get; set; } = InitialLineCount.Default;
     public int LogFontSize { get; set; } = 14;
     public Dictionary<string, string> RetainedTrust { get; set; } = [];
     public int Layout { get; set; } = 1;

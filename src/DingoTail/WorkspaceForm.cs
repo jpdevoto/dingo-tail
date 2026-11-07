@@ -354,7 +354,7 @@ internal sealed partial class WorkspaceForm : Form
         state.Sources.Add(source);
         sessions.Add(source.Id, session);
         Assign(state.ActivePane, source.Id);
-        session.Reader.Start();
+        session.Reader.Start(state.InitialLines);
     }
 
     private void CloseSource(SourceSession session)
@@ -476,7 +476,7 @@ internal sealed partial class WorkspaceForm : Form
             actions = Bar(DockStyle.Top, 40, Chrome.Panel);
             actions.WrapContents = false;
 
-            start = owner.IconAction("Start", 0xe037, () => Session?.Reader.Start());
+            start = owner.IconAction("Start", 0xe037, () => Session?.Reader.Start(owner.state.InitialLines));
             stop = owner.IconAction("Stop", 0xe047, () => Session?.Reader.Stop());
             follow = owner.IconAction("Resume live follow", 0xe258, () =>
             {

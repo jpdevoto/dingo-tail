@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Juan Pablo Devoto
 // SPDX-License-Identifier: GPL-3.0-only
 
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using Tmds.Ssh;
@@ -9,7 +10,7 @@ namespace DingoTail;
 
 internal interface ISourceReader
 {
-    void Start();
+    void Start(int initialLines);
     void Stop();
 }
 
@@ -304,17 +305,19 @@ internal sealed class RemoteServer(ServerProfile profile) : IDisposable
 
 internal static class RemoteCommand
 {
-    public static string Build(LogSource source, string? cursor)
+    public static string Build(LogSource source, string? cursor, int initialLines)
     {
+        InitialLineCount.Validate(initialLines);
+        var count = initialLines.ToString(CultureInfo.InvariantCulture);
         var sudo = source.Sudo ? "sudo -n -- " : "";
         if (!source.Journal)
         {
             if (!source.Path.StartsWith('/'))
                 throw new ArgumentException("Remote log paths must be absolute.");
-            return sudo + "tail -n 200 -F -- " + Quote(source.Path);
+            return sudo + $"tail -n {count} -F -- " + Quote(source.Path);
         }
 
-        var start = cursor is null ? "-n 200" : "--after-cursor=" + Quote(cursor);
+        var start = cursor is null ? $"-n {count}" : "--after-cursor=" + Quote(cursor);
         var unit = source.Path.Length == 0 ? "" : " --unit=" + Quote(source.Path);
         return sudo + "journalctl --no-pager -f -o json " + start + unit;
     }
@@ -332,8 +335,9 @@ internal sealed class RemoteTail(LogSource source, LogBuffer log, RemoteServer? 
     private readonly object gate = new();
     private CancellationTokenSource? running;
 
-    public void Start()
+    public void Start(int initialLines)
     {
+        InitialLineCount.Validate(initialLines);
         lock (gate)
         {
             if (running is not null)
@@ -347,7 +351,7 @@ internal sealed class RemoteTail(LogSource source, LogBuffer log, RemoteServer? 
             var session = server.SessionToken;
             running = run;
             log.SetStatus("Opening SSH stream");
-            _ = Task.Run(() => RunAsync(run, session));
+            _ = Task.Run(() => RunAsync(run, session, initialLines));
         }
     }
 
@@ -370,7 +374,7 @@ internal sealed class RemoteTail(LogSource source, LogBuffer log, RemoteServer? 
         }
     }
 
-    private async Task RunAsync(CancellationTokenSource run, CancellationToken session)
+    private async Task RunAsync(CancellationTokenSource run, CancellationToken session, int initialLines)
     {
         var token = run.Token;
         var delay = 1;
@@ -388,12 +392,14 @@ internal sealed class RemoteTail(LogSource source, LogBuffer log, RemoteServer? 
                 try
                 {
                     var client = await server!.GetClientAsync(token, session);
-                    using var process = await client.ExecuteAsync(RemoteCommand.Build(source, cursor), token);
+                    using var process = await client.ExecuteAsync(RemoteCommand.Build(source, cursor, initialLines), token);
                     var decoder = new LineDecoder(Encoding.UTF8);
                     Publish(run, () =>
                     {
                         if (recovering)
-                            log.Append([source.Journal ? "[SSH journal stream reopened]" : "[SSH file stream reopened with up to 200 recent lines]"]);
+                            log.Append([source.Journal && cursor is not null
+                                ? "[SSH journal stream resumed from cursor]"
+                                : $"[SSH {(source.Journal ? "journal" : "file")} stream reopened with up to {initialLines} recent lines]"]);
                         log.SetStatus("Live · SSH");
                     });
                     var batch = new List<string>(128);

@@ -21,8 +21,9 @@ internal sealed class LocalTail : ISourceReader
         this.log = log;
     }
 
-    public void Start()
+    public void Start(int initialLines)
     {
+        InitialLineCount.Validate(initialLines);
         lock (gate)
         {
             if (running is not null)
@@ -30,7 +31,7 @@ internal sealed class LocalTail : ISourceReader
             var run = new CancellationTokenSource();
             running = run;
             log.SetStatus("Opening local file");
-            _ = Task.Run(() => RunAsync(run));
+            _ = Task.Run(() => RunAsync(run, initialLines));
         }
     }
 
@@ -53,7 +54,7 @@ internal sealed class LocalTail : ISourceReader
         }
     }
 
-    private async Task RunAsync(CancellationTokenSource run)
+    private async Task RunAsync(CancellationTokenSource run, int initialLines)
     {
         var token = run.Token;
         var chunk = new byte[64 * 1024];
@@ -77,7 +78,7 @@ internal sealed class LocalTail : ISourceReader
                     if (current is null || replaced || truncated)
                     {
                         var initial = await ReadInitialAsync(candidate, chunk,
-                            replaced || truncated ? LogBuffer.MaxRows : 200, token);
+                            replaced || truncated ? LogBuffer.MaxRows : initialLines, token);
                         current?.Dispose();
                         current = candidate;
                         candidate = null;

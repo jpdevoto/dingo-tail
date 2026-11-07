@@ -1,0 +1,67 @@
+name: Publish Windows release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build and package Windows x64
+        shell: pwsh
+        run: |
+          $project = 'src/DingoTail/DingoTail.csproj'
+          [xml]$manifest = Get-Content -LiteralPath $project -Raw
+          $version = $manifest.Project.PropertyGroup.Version
+          if ($env:GITHUB_REF_NAME -cne "v$version") {
+            throw "Tag $env:GITHUB_REF_NAME does not match project version $version."
+          }
+
+          $publish = Join-Path $env:RUNNER_TEMP 'DingoTail'
+          dotnet publish $project -c Release -r win-x64 --self-contained true -o $publish -p:DebugType=none -p:DebugSymbols=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          foreach ($file in Get-ChildItem -LiteralPath $publish -File) {
+            if ($file.Name -match '^(createdump\.exe|mscordbi\.dll|mscordaccore.*\.dll)$') {
+              Remove-Item -LiteralPath $file.FullName
+            }
+          }
+          Copy-Item -LiteralPath 'LICENSE', 'COPYRIGHT', 'BRANDING.md', 'licenses' -Destination $publish -Recurse
+          $runtime = Get-Content -LiteralPath (Join-Path $publish 'DingoTail.runtimeconfig.json') -Raw | ConvertFrom-Json
+          $runtimeVersion = ($runtime.runtimeOptions.includedFrameworks | Where-Object name -eq 'Microsoft.NETCore.App').version
+          $notices = Join-Path $publish 'licenses/DEPENDENCIES.txt'
+          (Get-Content -LiteralPath $notices -Raw) -replace 'Microsoft \.NET / Windows Desktop 8\.0\.27', "Microsoft .NET / Windows Desktop $runtimeVersion" |
+            Set-Content -LiteralPath $notices -Encoding utf8
+
+          $name = "DingoTail-win-x64-v$version.zip"
+          $archive = Join-Path $env:RUNNER_TEMP $name
+          Compress-Archive -Path (Join-Path $publish '*') -DestinationPath $archive
+          $digest = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$digest  $name" | Set-Content -LiteralPath "$archive.sha256" -Encoding ascii
+          "RELEASE_ARCHIVE=$archive" >> $env:GITHUB_ENV
+
+      - name: Publish the GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          $changelog = Get-Content -LiteralPath 'CHANGELOG.md' -Raw
+          $version = [regex]::Escape($tag.Substring(1))
+          $section = [regex]::Match($changelog, "(?ms)^## $version\r?\n(.*?)(?=^## |\z)")
+          if (!$section.Success) { throw "Missing changelog section for $tag." }
+          $notes = Join-Path $env:RUNNER_TEMP 'release-notes.md'
+          $section.Groups[1].Value.Trim() | Set-Content -LiteralPath $notes -Encoding utf8
+          gh release create $tag $env:RELEASE_ARCHIVE "$env:RELEASE_ARCHIVE.sha256" --repo $env:GITHUB_REPOSITORY --verify-tag --latest --title "DingoTail for Windows $($tag.Substring(1))" --notes-file $notes

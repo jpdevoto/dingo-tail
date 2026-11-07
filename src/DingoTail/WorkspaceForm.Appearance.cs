@@ -40,13 +40,28 @@ internal sealed partial class WorkspaceForm
 
     private void ShowHighlighting()
     {
-        using var dialog = AppDialog("Appearance & highlighting", new Size(750, 400));
+        using var dialog = AppDialog("Appearance & highlighting", new Size(750, 480));
         var fontSize = new NumericUpDown { Minimum = 10, Maximum = 24, Value = state.LogFontSize, AccessibleName = "Log font size", Width = 65 };
         Chrome.StyleField(fontSize);
         var fontBar = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 36 };
         fontBar.Controls.Add(new Label { Text = "Log font size", AutoSize = true });
         fontBar.Controls.Add(fontSize);
         fontBar.Controls.Add(new Label { Text = "logical pixels", AutoSize = true });
+        var initialLines = new NumericUpDown
+        {
+            Minimum = InitialLineCount.Minimum, Maximum = InitialLineCount.Maximum,
+            Value = state.InitialLines, AccessibleName = "Initial lines to load", Width = 85
+        };
+        Chrome.StyleField(initialLines);
+        var historyBar = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 36 };
+        historyBar.Controls.Add(new Label { Text = "Initial lines to load", AutoSize = true });
+        historyBar.Controls.Add(initialLines);
+        var historyHelp = new Label
+        {
+            Dock = DockStyle.Top, Height = 40, ForeColor = Chrome.Muted,
+            Text = "Applies when starting a reader. Restart running readers to use a changed value. Byte limits may result in fewer lines."
+        };
+
         var editor = new DataGridView
         {
             AccessibleName = "Ordered highlighting rules", Dock = DockStyle.Fill, AllowUserToAddRows = false,
@@ -163,13 +178,15 @@ internal sealed partial class WorkspaceForm
                     row.Cells[4].Value is true, foreground, background));
             }
 
-            editor.Enabled = actions.Enabled = false;
+            editor.Enabled = actions.Enabled = fontBar.Enabled = historyBar.Enabled = false;
             try
             {
                 var palette = await Task.Run(() => new HighlightPalette(rules));
                 if (dialog.IsDisposed || closing)
                     return;
                 var previousFont = state.LogFontSize;
+                var previousInitialLines = state.InitialLines;
+                state.InitialLines = (int)initialLines.Value;
                 state.LogFontSize = (int)fontSize.Value;
                 var previous = state.HighlightRules;
                 state.HighlightRules = rules;
@@ -177,7 +194,8 @@ internal sealed partial class WorkspaceForm
                 {
                     state.HighlightRules = previous;
                     state.LogFontSize = previousFont;
-                    error.Text = "Could not save highlighting rules. Check workspace access and retry.";
+                    state.InitialLines = previousInitialLines;
+                    error.Text = "Could not save appearance settings. Check workspace access and retry.";
                     return;
                 }
                 ApplyHighlightPalette(palette);
@@ -192,12 +210,14 @@ internal sealed partial class WorkspaceForm
             finally
             {
                 if (!dialog.IsDisposed)
-                    editor.Enabled = actions.Enabled = true;
+                    editor.Enabled = actions.Enabled = fontBar.Enabled = historyBar.Enabled = true;
             }
         };
 
         dialog.Controls.Add(editor);
         dialog.Controls.Add(note);
+        dialog.Controls.Add(historyHelp);
+        dialog.Controls.Add(historyBar);
         dialog.Controls.Add(fontBar);
         dialog.Controls.Add(error);
         dialog.Controls.Add(actions);
